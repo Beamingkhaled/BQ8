@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Avenues & Dragons | لوحة التحكم</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;900&display=swap" rel="stylesheet">
+  <style>
+    :root{
+      --bg:#0c0614; --card:#1a0f2b; --accent:#FFBB33; --line:#2a1740;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{font-family:'Tajawal',sans-serif;background:linear-gradient(180deg,#12051f,#2c1147);color:#fff;min-height:100vh}
+    .wrap{max-width:880px;margin:0 auto;padding:22px}
+    h1{font-weight:900;letter-spacing:.5px;margin-bottom:12px}
+    .card{
+      background:rgba(0,0,0,.25); border:1px solid rgba(255,255,255,.12);
+      border-radius:14px; padding:16px; margin-top:14px;
+      box-shadow:0 10px 28px rgba(0,0,0,.25);
+    }
+    label{display:block; font-weight:700; margin:12px 0 6px}
+    input[type="text"], textarea{
+      width:100%; padding:12px 12px; border-radius:10px;
+      border:1px solid rgba(255,255,255,.18); background:#1f1432; color:#fff;
+      font-size:1.05rem;
+    }
+    textarea{min-height:88px; line-height:1.6}
+
+    .row{display:grid; grid-template-columns:1fr 1fr; gap:14px}
+    .btn{
+      display:inline-block; padding:12px 18px; border-radius:12px;
+      background:linear-gradient(90deg,#FFD580,#FFBB33); color:#1b0033;
+      font-weight:900; border:none; cursor:pointer; margin-top:12px;
+    }
+    .muted{opacity:.85; font-size:.95rem}
+    .hr{height:1px;background:#3a205a;margin:18px 0}
+    .right{float:inline-start}
+    .tiny{font-size:.9rem;opacity:.9}
+
+    .login{display:flex; gap:10px; flex-wrap:wrap; align-items:end}
+    .login input{max-width:300px}
+    .ok{color:#7CFF8A;font-weight:800}
+    .bad{color:#FF8787;font-weight:800}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <h1>لوحة التحكم — Avenues & Dragons</h1>
+    <div class="tiny">سجّل دخولك لتحديث الشاشة العامة فوراً.</div>
+
+    <div class="card">
+      <div class="login">
+        <div>
+          <label>الإيميل</label>
+          <input type="text" id="email" placeholder="you@example.com">
+        </div>
+        <div>
+          <label>الرقم السري</label>
+          <input type="text" id="password" placeholder="••••••••">
+        </div>
+        <button class="btn" id="loginBtn">دخول</button>
+        <div id="authState" class="tiny"></div>
+      </div>
+      <div class="hr"></div>
+      <div class="tiny muted">نصيحة: أنشئ مستخدماً واحداً مخصصاً لك فقط. بعد تسجيل الدخول بنجاح سترى (متصل ✅).</div>
+    </div>
+
+    <div class="card">
+      <label>ملخص سريع (للقادمين متأخرين)</label>
+      <textarea id="summary">ملخص سريع: قصة قصيرة في الأڤنيوز—ادخلوا وشاركوا!</textarea>
+
+      <label>نص المشهد الحالي</label>
+      <textarea id="scene">تمشي الأم مع ابنها في الأڤنيوز وتشوف إعلان تخفيض كبير…</textarea>
+
+      <div class="row">
+        <div>
+          <label>خيار ١</label>
+          <input id="opt1" type="text" value="تدخل المحل بسرعة تشوف العروض 🔥">
+        </div>
+        <div>
+          <label>خيار ٢</label>
+          <input id="opt2" type="text" value="تتجاهل وتكمل طريقها ☕️">
+        </div>
+      </div>
+
+      <label>رابط فيديو الخلفية (mp4 / webm — اختياري)</label>
+      <input id="bgVideoURL" type="text" placeholder="https://.../avenues-loop.mp4">
+
+      <button class="btn" id="pushBtn">تحديث الشاشة الآن</button>
+      <span id="status"></span>
+    </div>
+
+    <div class="card">
+      <label>تحميل مشهد محفوظ مسبقاً (JSON)</label>
+      <textarea id="jsonIn" placeholder='{"summary":"...","scene":"...","option1":"...","option2":"...","bgVideoURL":"..."}'></textarea>
+      <button class="btn" id="loadJson">تحميل إلى الحقول</button>
+    </div>
+
+    <div class="card tiny">
+      <div class="muted">المسار في قاعدة البيانات: <code>game/current</code> — تعرضه صفحة المشاهدين مباشرة.</div>
+    </div>
+  </div>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-database-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.4/firebase-auth-compat.js"></script>
+  <script>
+    // TODO: Paste the SAME Firebase config here as in viewer.html
+    const firebaseConfig = {
+      apiKey: "YOUR_API_KEY",
+      authDomain: "YOUR_PROJECT_ID.firebaseapp.com",
+      databaseURL: "https://YOUR_PROJECT_ID-default-rtdb.firebaseio.com",
+      projectId: "YOUR_PROJECT_ID",
+      storageBucket: "YOUR_PROJECT_ID.appspot.com",
+      messagingSenderId: "SENDER_ID",
+      appId: "APP_ID"
+    };
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+    const auth = firebase.auth();
+
+    // Auth
+    const email = document.getElementById('email');
+    const password = document.getElementById('password');
+    const loginBtn = document.getElementById('loginBtn');
+    const authState = document.getElementById('authState');
+
+    loginBtn.onclick = async () => {
+      try {
+        await auth.signInWithEmailAndPassword(email.value.trim(), password.value.trim());
+      } catch(e){
+        authState.innerHTML = '<span class="bad">خطأ في الدخول</span> — '+(e.message||e);
+      }
+    };
+    auth.onAuthStateChanged(user=>{
+      authState.innerHTML = user ? '<span class="ok">متصل ✅</span>' : '<span class="bad">غير مسجل</span>';
+    });
+
+    // Push updates
+    const $sum  = document.getElementById('summary');
+    const $scene= document.getElementById('scene');
+    const $o1   = document.getElementById('opt1');
+    const $o2   = document.getElementById('opt2');
+    const $bg   = document.getElementById('bgVideoURL');
+    const $push = document.getElementById('pushBtn');
+    const $stat = document.getElementById('status');
+
+    $push.onclick = async () => {
+      if(!auth.currentUser){ $stat.textContent = '⚠️ سجّل دخولك أولاً.'; return; }
+      const payload = {
+        summary: $sum.value.trim(),
+        scene: $scene.value.trim(),
+        option1: $o1.value.trim(),
+        option2: $o2.value.trim(),
+        bgVideoURL: $bg.value.trim()
+      };
+      try{
+        await db.ref('game/current').set(payload);
+        $stat.textContent = '✅ تم التحديث — ظاهر الآن على صفحة المشاهدين';
+        setTimeout(()=> $stat.textContent='', 1800);
+      }catch(e){
+        $stat.textContent = '❌ لم يتم — '+(e.message||e);
+      }
+    };
+
+    // Load JSON blob into fields (quick paste tool)
+    document.getElementById('loadJson').onclick = () => {
+      try{
+        const v = JSON.parse(document.getElementById('jsonIn').value || '{}');
+        if(v.summary!==undefined) $sum.value = v.summary;
+        if(v.scene!==undefined)   $scene.value = v.scene;
+        if(v.option1!==undefined) $o1.value = v.option1;
+        if(v.option2!==undefined) $o2.value = v.option2;
+        if(v.bgVideoURL!==undefined) $bg.value = v.bgVideoURL;
+      }catch(e){
+        alert('JSON غير صالح');
+      }
+    };
+  </script>
+</body>
+</html>
