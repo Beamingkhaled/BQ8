@@ -1,148 +1,56 @@
-<!DOCTYPE html>
-<html lang="ar" dir="rtl">
+<!doctype html>
+<html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>لوحة التحكم — تغيير الاختيارات فوراً</title>
-<link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@500;700;800&display=swap" rel="stylesheet">
-<style>
-  :root{--bg:#0f0719;--card:#1a1030;--line:#2c1f4e;--ink:#fff;--muted:#b9b1d4;--accent:#ffd34d}
-  *{box-sizing:border-box} html,body{margin:0;background:#0f0719;color:var(--ink);font-family:'Tajawal',sans-serif}
-  .wrap{max-width:900px;margin:22px auto;padding:0 14px}
-  .card{background:linear-gradient(180deg,#1e1338 0%,#140d26 100%);border:1px solid var(--line);border-radius:16px;box-shadow:0 20px 40px rgba(0,0,0,.45);padding:18px;margin-bottom:14px}
-  h1,h2{margin:0 0 8px;font-weight:800}
-  label{display:block;margin:10px 0 6px;font-weight:700}
-  input,textarea{width:100%;background:#150e29;border:1px solid var(--line);color:var(--ink);padding:12px;border-radius:12px;font-size:16px}
-  textarea{min-height:80px;resize:vertical}
-  .row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .btn{background:var(--accent);border:0;border-radius:12px;padding:12px 16px;font-weight:800;cursor:pointer}
-  .btn.secondary{background:#2f1b5a;border:1px solid #3a236d;color:#cfc6ea}
-  .bar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}
-  .badge{display:inline-flex;align-items:center;gap:8px;background:#2f1b5a;border:1px solid #3a236d;padding:.35rem .7rem;border-radius:999px;color:#cfc6ea;font-size:13px}
-  small{color:var(--muted)}
-  .live{color:#8df58a}.err{color:#ff7c7c}
-</style>
+  <meta charset="utf-8" />
+  <title>Admin · Live Choices</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; padding: 24px; max-width: 700px; margin: auto; background:#0b0b0b; color:#fff}
+    label{display:block; margin:12px 0 6px; font-weight:600}
+    textarea,input{width:100%; padding:12px; border-radius:10px; border:1px solid #333; background:#111; color:#fff}
+    .hint{opacity:.75; font-size:.9rem; margin-top:6px}
+    .box{border:1px solid #222; padding:16px; border-radius:12px; background:#0e0e0e; margin:18px 0}
+  </style>
 </head>
 <body>
-<div class="wrap">
-  <div class="card">
-    <h1>لوحة التحكم — تحكم مباشر بلا تسجيل دخول</h1>
-    <div class="bar">
-      <input id="frontUrl" placeholder="ضع رابط الصفحة الأمامية (مثال: https://your-front-domain/index.html)">
-      <button class="btn secondary" id="openFront">افتح/اتصل بالواجهة الأمامية</button>
-      <span class="badge" id="status">غير متصل</span>
-    </div>
-    <small>ملاحظة: يجب فتح الواجهة الأمامية في **نفس المتصفح** ليتم التحديث الفوري.</small>
+  <h1>Admin – Live Choices</h1>
+  <p class="hint">Edit below and click “Update Live Data”, then <b>Commit changes</b> on GitHub.</p>
+
+  <div class="box">
+    <label>Left choice</label>
+    <input id="left" value="ادخل القهوة ولا نتمشى؟" />
+
+    <label>Right choice</label>
+    <input id="right" value="نتمشى اول بعدين قهوة؟" />
+
+    <label>Scene title (optional)</label>
+    <input id="title" value="المول – القرار الأول" />
+
+    <p class="hint">Click below to regenerate the JSON block:</p>
+    <button onclick="saveJSON()">Update Live Data Below</button>
   </div>
 
-  <div class="card">
-    <h2>المحتوى</h2>
-    <label>السؤال (اختياري)</label>
-    <textarea id="q" placeholder="مثال: أم مع ابنها المراهق في الأفنيوز — ماذا تفعل الآن؟"></textarea>
-
-    <div class="row">
-      <div>
-        <label>الخيار 1</label>
-        <textarea id="a1" placeholder="☕️ تدخل مقهى مزدحم"></textarea>
-      </div>
-      <div>
-        <label>الخيار 2</label>
-        <textarea id="a2" placeholder="🛍️ تذهب إلى الممر الخلفي"></textarea>
-      </div>
-    </div>
-
-    <label>سطر سفلي/تعليمات (اختياري)</label>
-    <input id="meta" placeholder="اكتب 1 أو 2 في التعليقات — الهدايا تغيّر القصة">
-
-    <div class="bar">
-      <button class="btn" id="push">غيّر الآن</button>
-      <button class="btn secondary" id="demo">مثال تعبئة</button>
-    </div>
-  </div>
-</div>
-
-<script>
-  // ==============================================
-  // أبسط اتصال ممكن: window.postMessage بين نافذتين
-  // 1) اضغط "افتح/اتصل" لفتح واجهة المشاهد (Front)
-  // 2) اكتب الخيارات واضغط "غيّر الآن" لإرسالها فوراً
-  // ==============================================
-
-  const frontUrlInput = document.getElementById('frontUrl');
-  const openBtn = document.getElementById('openFront');
-  const pushBtn = document.getElementById('push');
-  const demoBtn = document.getElementById('demo');
-  const statusEl = document.getElementById('status');
-
-  const qEl = document.getElementById('q');
-  const a1El = document.getElementById('a1');
-  const a2El = document.getElementById('a2');
-  const metaEl = document.getElementById('meta');
-
-  let frontWin = null;
-  let frontOrigin = '*'; // لو أردت التشديد، ضع أصل (Origin) الواجهة الأمامية هنا
-
-  // افتح/اتصل بالواجهة الأمامية
-  openBtn.addEventListener('click', ()=>{
-    const url = frontUrlInput.value.trim();
-    if(!url){ alert('ضع رابط الواجهة الأمامية أولاً'); return; }
-    try{
-      // إذا كانت النافذة مفتوحة مسبقاً، حاول التركيز عليها
-      if(frontWin && !frontWin.closed){
-        frontWin.focus();
-      }else{
-        frontWin = window.open(url, 'AvenuesFront');
-      }
-      statusEl.textContent = 'تم الفتح — في انتظار التأكيد من الواجهة الأمامية…';
-    }catch(e){
-      console.error(e);
-      statusEl.textContent = 'تعذر الفتح'; statusEl.className = 'badge err';
+  <script>
+    function saveJSON(){
+      const data = {
+        title: document.getElementById('title').value.trim(),
+        left:  document.getElementById('left').value.trim(),
+        right: document.getElementById('right').value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+      const block = document.getElementById('LIVE_CHOICES_JSON');
+      block.textContent = JSON.stringify(data, null, 2);
+      alert('Updated. Now “Commit changes” on GitHub.');
     }
-  });
+  </script>
 
-  // إرسال التحديث
-  pushBtn.addEventListener('click', ()=>{
-    if(!frontWin || frontWin.closed){
-      statusEl.textContent = 'غير متصل — افتح الواجهة الأمامية أولاً';
-      statusEl.className = 'badge err';
-      alert('افتح/اتصل بالواجهة الأمامية أولاً');
-      return;
-    }
-    const payload = {
-      type: 'UPDATE_CHOICES',
-      question: qEl.value.trim(),
-      option1: a1El.value.trim(),
-      option2: a2El.value.trim(),
-      meta: metaEl.value.trim(),
-      ts: Date.now()
-    };
-    try{
-      frontWin.postMessage(payload, frontOrigin);
-      statusEl.textContent = 'أُرسلت التغييرات ✔️';
-      statusEl.className = 'badge live';
-    }catch(e){
-      console.error(e);
-      statusEl.textContent = 'فشل الإرسال';
-      statusEl.className = 'badge err';
-    }
-  });
-
-  // مثال تعبئة سريع
-  demoBtn.addEventListener('click', ()=>{
-    qEl.value = 'أمّ مع ابنها المراهق في الأفنيوز — ماذا تفعل الآن؟';
-    a1El.value = '☕️ تدخل مقهى مزدحم';
-    a2El.value = '🛍️ تذهب للممر الخلفي';
-    metaEl.value = 'اكتب 1 أو 2 في التعليقات — الهدايا تغيّر القصة';
-  });
-
-  // استقبل "تحية" من الواجهة الأمامية للتأكد من الاتصال
-  window.addEventListener('message', (ev)=>{
-    // يمكنك هنا فحص ev.origin لو أردت
-    if(ev && ev.data && ev.data.type === 'FRONT_READY'){
-      statusEl.textContent = 'متصل بالواجهة الأمامية ✅';
-      statusEl.className = 'badge live';
-    }
-  });
-</script>
+  <!-- LIVE_CHOICES_START -->
+  <pre id="LIVE_CHOICES_JSON" style="white-space:pre-wrap;">{
+  "title": "المول – القرار الأول",
+  "left": "ادخل القهوة ولا نتمشى؟",
+  "right": "نتمشى اول بعدين قهوة؟",
+  "updatedAt": "2025-11-08T00:00:00.000Z"
+}</pre>
+  <!-- LIVE_CHOICES_END -->
 </body>
 </html>
