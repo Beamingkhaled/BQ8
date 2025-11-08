@@ -1,156 +1,234 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
   <meta charset="utf-8" />
-  <title>GM Admin · Live Choices</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>لوحة التحكم | تحديث الخيارات</title>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;700;800&display=swap" rel="stylesheet">
   <style>
-    body{font-family:Tajawal,system-ui,-apple-system,Segoe UI,Roboto,Arial;background:#0b0b0b;color:#fff;margin:0;padding:24px}
-    .wrap{max-width:820px;margin:auto}
-    h1{margin:0 0 8px}
-    .hint{opacity:.8;margin:0 0 16px}
-    label{display:block;margin:14px 0 6px;font-weight:700}
-    input,textarea{width:100%;padding:12px;border-radius:10px;border:1px solid #333;background:#121212;color:#fff}
-    button{margin-top:16px;padding:12px 16px;border-radius:10px;border:1px solid #444;background:#1a1a1a;color:#fff;cursor:pointer}
-    .row{display:grid;gap:12px}
-    .box{border:1px solid #222;padding:16px;border-radius:12px;background:#0f0f0f;margin:16px 0}
-    .mono{font-family:ui-monospace,Menlo,Consolas,monospace}
-    .ok{color:#8dff9d}.bad{color:#ff8e8e}
+    :root{--bg:#000;--card:#111;--border:#222;--text:#fff;--ok:#28c76f;--muted:#9aa0a6;--radius:16px}
+    *{box-sizing:border-box}
+    body{margin:0;background:var(--bg);color:var(--text);font-family:'Tajawal',system-ui,Segoe UI,Roboto,Arial,sans-serif}
+    .wrap{width:min(900px,94vw);margin:24px auto;padding:8px 10px 40px}
+    h1{font-size:26px;margin:10px 0 18px}
+    .card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);padding:16px 14px;margin:14px 0;box-shadow:0 12px 30px rgba(0,0,0,.35), inset 0 1px 0 rgba(255,255,255,.04)}
+    label{display:block;font-weight:800;margin:6px 2px 8px}
+    input,textarea,select{
+      width:100%;background:#0b0b0b;border:1px solid #1f1f1f;border-radius:12px;color:#fff;
+      padding:14px 12px;font-size:16px;outline:none
+    }
+    .row{display:grid;grid-template-columns:1fr;gap:10px}
+    @media(min-width:720px){.row{grid-template-columns:1fr 1fr}}
+    button{
+      background:#191919;border:1px solid #2b2b2b;border-radius:14px;color:#fff;
+      padding:14px 16px;font-size:16px;font-weight:800;cursor:pointer; width:100%;
+    }
+    button.primary{background:#1a3a22;border-color:#285d3a}
+    .ok{color:var(--ok);font-weight:800}
+    pre{white-space:pre-wrap;word-break:break-word;max-height:50vh;overflow:auto;background:#0b0b0b;border:1px solid #1f1f1f;border-radius:12px;padding:12px}
+    .muted{color:var(--muted);font-size:13px}
+    .inline{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+    .pill{padding:6px 10px;border:1px dashed #2b2b2b;border-radius:999px;font-size:12px;color:#aaa}
+    a{color:#9ad3ff;text-decoration:none}
   </style>
 </head>
 <body>
   <div class="wrap">
-    <h1>لوحة التحكم (GM)</h1>
-    <div class="hint">حرّر النصوص ثم اضغط <b>حفظ</b> ليتم تحديث <span class="mono">choices.json</span> مباشرة.</div>
+    <h1>لوحة التحكم — تحديث <code>choices.json</code></h1>
 
-    <div class="box">
+    <div class="card">
       <label>🔑 GitHub Token (مرة واحدة)</label>
-      <input id="token" type="password" placeholder="ghp_xxxxxxxxx..." />
-      <div class="hint">يُحفظ محليًا في متصفحك فقط. الصلاحيات: <span class="mono">contents:write</span> على هذا المستودع.</div>
-
-      <label>👤 المستخدم (ثابت)</label>
-      <input id="user" value="beamingkhaled" />
-
-      <label>📦 المستودع (ثابت)</label>
-      <input id="repo" value="beamingkhaled.github.io" />
-
-      <label>🌿 الفرع</label>
-      <input id="branch" value="main" />
-
-      <label>📄 مسار الملف</label>
-      <input id="path" value="choices.json" />
+      <input id="token" type="password" placeholder="ghp_xxx أو github_pat_xxx" />
+      <div class="muted">يُخزن محلياً في متصفحك فقط. الصلاحيات المطلوبة: <b>contents:write</b>.</div>
+      <div class="row" style="margin-top:10px">
+        <div>
+          <label>👤 المستخدم</label>
+          <input id="owner" value="beamingkhaled" />
+        </div>
+        <div>
+          <label>📦 المستودع</label>
+          <!-- إذا كان موقعك العام هو beamingkhaled.github.io فاحفظ هنا -->
+          <input id="repo" value="beamingkhaled.github.io" />
+        </div>
+        <div>
+          <label>🌿 الفرع</label>
+          <input id="branch" value="main" />
+        </div>
+        <div>
+          <label>📄 مسار الملف</label>
+          <input id="path" value="choices.json" />
+        </div>
+      </div>
     </div>
 
-    <div class="box">
-      <label>عنوان المشهد</label>
-      <input id="title" value="المول – القرار الأول" />
+    <div class="card">
+      <div class="row">
+        <div>
+          <label>عنوان المشهد</label>
+          <input id="title" placeholder="مثال: المول — القرار الأول" />
+        </div>
+      </div>
+      <div class="row">
+        <div>
+          <label>الخيـار الأيسر</label>
+          <input id="left" placeholder="ندخل القهوة؟" />
+        </div>
+        <div>
+          <label>الخيار الأيمن</label>
+          <input id="right" placeholder="نتمشى أول؟" />
+        </div>
+      </div>
 
-      <label>الخيار الأيسر</label>
-      <input id="left" value="ندخل القهوة؟" />
+      <div class="row" style="margin-top:10px">
+        <button class="primary" id="saveBtn">💾 حفظ إلى <code>choices.json</code></button>
+        <button id="loadBtn">⟳ قراءة المحتوى الحالي</button>
+      </div>
 
-      <label>الخيار الأيمن</label>
-      <input id="right" value="نتمشى أول؟" />
-
-      <button id="saveBtn">💾 حفظ إلى choices.json</button>
       <div id="status" style="margin-top:10px"></div>
+      <div id="links" class="inline" style="margin-top:6px"></div>
     </div>
 
-    <div class="box">
+    <div class="card">
       <label>المحتوى الحالي (للتأكيد)</label>
-      <pre id="current" class="mono" style="white-space:pre-wrap"></pre>
+      <pre id="preview">—</pre>
+      <div class="muted">تحديث الواجهة الأمامية يحدث فوراً — لأنها تجلب الملف كل 4 ثوانٍ ومع تعطيل الكاش.</div>
+    </div>
+
+    <div class="muted inline">
+      <span class="pill">تلميح: ضع <code>admin.html</code> في أي مستودع خاص أو عام.</span>
+      <span class="pill">ضع <code>index.html</code> و <code>choices.json</code> في مستودع موقعك.</span>
     </div>
   </div>
 
-  <script>
-    // --- helpers ---
-    const el = id => document.getElementById(id);
-    const setStatus = (msg, ok=false) => el('status').innerHTML = ok ? '<span class="ok">'+msg+'</span>' : '<span class="bad">'+msg+'</span>';
-    const b64 = s => btoa(unescape(encodeURIComponent(s)));
+<script>
+  // store token locally
+  const $ = id => document.getElementById(id);
+  const tokenInput  = $('token');
+  const ownerInput  = $('owner');
+  const repoInput   = $('repo');
+  const branchInput = $('branch');
+  const pathInput   = $('path');
+  const titleInput  = $('title');
+  const leftInput   = $('left');
+  const rightInput  = $('right');
+  const statusEl    = $('status');
+  const previewEl   = $('preview');
+  const linksEl     = $('links');
 
-    // Persist token locally
-    el('token').value = localStorage.getItem('gm_token') || '';
-    el('token').addEventListener('change', () => localStorage.setItem('gm_token', el('token').value));
+  // restore saved token & repo info
+  tokenInput.value  = localStorage.getItem('gh_token')  || '';
+  ownerInput.value  = localStorage.getItem('gh_owner')  || ownerInput.value;
+  repoInput.value   = localStorage.getItem('gh_repo')   || repoInput.value;
+  branchInput.value = localStorage.getItem('gh_branch') || branchInput.value;
+  pathInput.value   = localStorage.getItem('gh_path')   || pathInput.value;
 
-    async function loadCurrent(){
-      try{
-        const user = el('user').value.trim();
-        const repo = el('repo').value.trim();
-        const path = el('path').value.trim();
-        // Use raw GH to fetch current JSON if exists
-        const rawUrl = `https://raw.githubusercontent.com/${user}/${repo}/main/${path}`;
-        const res = await fetch(rawUrl, {cache:'no-store'});
-        if(res.ok){
-          const txt = await res.text();
-          el('current').textContent = txt;
-          try{
-            const data = JSON.parse(txt);
-            if(data.title) el('title').value = data.title;
-            if(data.left)  el('left').value  = data.left;
-            if(data.right) el('right').value = data.right;
-          }catch(_){}
-        }else{
-          el('current').textContent = '(لا يوجد ملف بعد — سيتم إنشاؤه عند الضغط على حفظ)';
-        }
-      }catch(e){
-        el('current').textContent = 'خطأ عند قراءة الملف: ' + e.message;
-      }
-    }
+  function saveLocals(){
+    localStorage.setItem('gh_token',  tokenInput.value.trim());
+    localStorage.setItem('gh_owner',  ownerInput.value.trim());
+    localStorage.setItem('gh_repo',   repoInput.value.trim());
+    localStorage.setItem('gh_branch', branchInput.value.trim());
+    localStorage.setItem('gh_path',   pathInput.value.trim());
+  }
 
-    async function save(){
-      const token  = el('token').value.trim();
-      if(!token){ setStatus('أدخل الـ Token ثم حاول مرة أخرى'); return; }
+  async function githubGetContents(owner, repo, path, ref){
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}?ref=${encodeURIComponent(ref)}`,{
+      headers:{ Authorization:`Bearer ${tokenInput.value.trim()}`, Accept:'application/vnd.github+json' }
+    });
+    if(res.status === 404) return null;
+    if(!res.ok) throw new Error('GET '+res.status);
+    return res.json();
+  }
 
-      const user   = el('user').value.trim();
-      const repo   = el('repo').value.trim();
-      const branch = el('branch').value.trim();
-      const path   = el('path').value.trim();
+  async function githubPutContents(owner, repo, path, message, contentB64, sha, branch){
+    const body = { message, content: contentB64, branch };
+    if(sha) body.sha = sha;
+    const res = await fetch(`https://api.github.com/repos/${owner}/${repo}/contents/${encodeURIComponent(path)}`,{
+      method:'PUT',
+      headers:{ Authorization:`Bearer ${tokenInput.value.trim()}`, Accept:'application/vnd.github+json' },
+      body: JSON.stringify(body)
+    });
+    if(!res.ok) throw new Error('PUT '+res.status+' '+(await res.text()));
+    return res.json();
+  }
 
-      const payload = {
-        title: el('title').value.trim(),
-        left:  el('left').value.trim(),
-        right: el('right').value.trim(),
-        updatedAt: new Date().toISOString()
-      };
-      const content = b64(JSON.stringify(payload, null, 2));
+  function toB64(str){ return btoa(unescape(encodeURIComponent(str))); }
+  function pretty(obj){ return JSON.stringify(obj, null, 2); }
 
-      setStatus('جارٍ الحفظ…');
+  async function loadPreview(){
+    try{
+      saveLocals();
+      statusEl.innerHTML = '⏳ جاري القراءة…';
+      const owner  = ownerInput.value.trim();
+      const repo   = repoInput.value.trim();
+      const path   = pathInput.value.trim();
+      const branch = branchInput.value.trim();
 
-      // 1) Get current file SHA (if exists)
-      let sha = null;
-      const getUrl = `https://api.github.com/repos/${user}/${repo}/contents/${encodeURIComponent(path)}?ref=${branch}`;
-      const headers = { 'Authorization': 'Bearer ' + token, 'Accept':'application/vnd.github+json' };
-      const getRes = await fetch(getUrl, {headers});
-      if(getRes.status === 200){
-        const j = await getRes.json();
-        sha = j.sha;
-      } else if (getRes.status !== 404){
-        setStatus('خطأ في قراءة الملف: HTTP '+getRes.status); return;
-      }
-
-      // 2) PUT new content
-      const putRes = await fetch(getUrl, {
-        method: 'PUT',
-        headers,
-        body: JSON.stringify({
-          message: 'chore: update choices.json ('+new Date().toISOString()+')',
-          content,
-          sha,
-          branch
-        })
-      });
-
-      if(!putRes.ok){
-        const t = await putRes.text();
-        setStatus('فشل الحفظ: HTTP '+putRes.status+' — '+t);
+      const file = await githubGetContents(owner, repo, path, branch);
+      if(!file){
+        previewEl.textContent = 'الملف غير موجود بعد. سيتم إنشاؤه عند أول حفظ.';
+        statusEl.innerHTML = '';
+        renderQuickLinks(owner, repo, path);
         return;
       }
-
-      setStatus('تم الحفظ ✅ — تم تحديث choices.json', true);
-      el('current').textContent = JSON.stringify(payload, null, 2);
+      const json = JSON.parse(decodeURIComponent(escape(atob(file.content))));
+      previewEl.textContent = pretty(json);
+      statusEl.innerHTML = '';
+      renderQuickLinks(owner, repo, path);
+    }catch(e){
+      statusEl.innerHTML = '⚠️ خطأ في القراءة: '+e.message;
     }
+  }
 
-    el('saveBtn').addEventListener('click', save);
-    loadCurrent();
-  </script>
+  async function save(){
+    try{
+      saveLocals();
+      statusEl.innerHTML = '⏳ جارٍ الحفظ…';
+      const owner  = ownerInput.value.trim();
+      const repo   = repoInput.value.trim();
+      const path   = pathInput.value.trim();
+      const branch = branchInput.value.trim();
+
+      const payload = {
+        title: titleInput.value.trim(),
+        left:  leftInput.value.trim(),
+        right: rightInput.value.trim(),
+        updatedAt: new Date().toISOString()
+      };
+
+      // get current sha if exists
+      const current = await githubGetContents(owner, repo, path, branch);
+      const sha = current && current.sha ? current.sha : undefined;
+
+      await githubPutContents(
+        owner, repo, path,
+        `update choices.json at ${new Date().toISOString()}`,
+        toB64(pretty(payload)), sha, branch
+      );
+
+      statusEl.innerHTML = '✅ تم الحفظ — <span class="ok">choices.json</span> تم تحديثه';
+      previewEl.textContent = pretty(payload);
+      renderQuickLinks(owner, repo, path);
+    }catch(e){
+      statusEl.innerHTML = '❌ فشل الحفظ: '+e.message.replace(/</g,'&lt;');
+    }
+  }
+
+  function renderQuickLinks(owner, repo, path){
+    linksEl.innerHTML = '';
+    const site = (repo.toLowerCase() === `${owner.toLowerCase()}.github.io`)
+      ? `https://${owner}.github.io/`
+      : `https://${owner}.github.io/${repo}/`;
+    const a1 = document.createElement('a'); a1.href = site; a1.textContent = 'فتح الواجهة الأمامية'; a1.target = '_blank';
+    const raw = `https://raw.githubusercontent.com/${owner}/${repo}/main/${path}`;
+    const a2 = document.createElement('a'); a2.href = raw; a2.textContent = 'عرض choices.json (Raw)'; a2.target = '_blank';
+    linksEl.appendChild(a1); linksEl.appendChild(document.createTextNode(' • ')); linksEl.appendChild(a2);
+  }
+
+  $('saveBtn').addEventListener('click', save);
+  $('loadBtn').addEventListener('click', loadPreview);
+
+  // auto-load preview on open
+  loadPreview();
+</script>
 </body>
 </html>
