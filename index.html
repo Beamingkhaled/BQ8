@@ -1,109 +1,55 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <title>Admin · Live Choices</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    body {
-      font-family: system-ui, -apple-system, Segoe UI, Roboto, Arial; 
-      padding: 24px; 
-      max-width: 700px; 
-      margin: auto; 
-      background: #0b0b0b; 
-      color: #fff;
-    }
-    label {
-      display: block; 
-      margin: 12px 0 6px; 
-      font-weight: 600;
-    }
-    textarea, input {
-      width: 100%; 
-      padding: 12px; 
-      border-radius: 10px; 
-      border: 1px solid #333; 
-      background: #111; 
-      color: #fff;
-      font-size: 16px;
-    }
-    .hint {
-      opacity: .75; 
-      font-size: .9rem; 
-      margin-top: 6px;
-    }
-    .box {
-      border: 1px solid #222; 
-      padding: 16px; 
-      border-radius: 12px; 
-      background: #0e0e0e; 
-      margin: 18px 0;
-    }
-    button {
-      background: #ffdc73;
-      color: #000;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 8px;
-      font-weight: 600;
-      cursor: pointer;
-      margin-top: 10px;
-      transition: all 0.3s ease;
-    }
-    button:hover {
-      background: #ffd34e;
-      transform: translateY(-2px);
-    }
-    pre {
-      background: #111;
-      padding: 16px;
-      border-radius: 8px;
-      border: 1px solid #333;
-      overflow-x: auto;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GM Admin - Live Choices</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background-color: #f4f4f4; }
+        .container { max-width: 700px; margin: 0 auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 0 10px rgba(0,0,0,0.1); }
+        input[type="text"], textarea { width: 100%; padding: 10px; margin-bottom: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        button { background-color: #4CAF50; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background-color: #45a049; }
+        pre { background-color: #eee; padding: 15px; border-radius: 4px; white-space: pre-wrap; word-break: break-all; margin-top: 15px; }
+    </style>
 </head>
 <body>
-  <h1>Admin – Live Choices</h1>
-  <p class="hint">Edit below and click "Update Live Data", then <b>Commit changes</b> on GitHub.</p>
+    <div class="container">
+        <h1>GM Admin - Generate Live Data</h1>
+        <p><strong>INSTRUCTIONS:</strong> Edit the fields below, click "Generate JSON," then copy the JSON block and manually commit it as **current_scene.json** to your Front-End data folder.</p>
 
-  <div class="box">
-    <label>Scene Title</label>
-    <input id="title" value="المول – القرار الأول" />
+        <label for="title">Scene Title / Story Text:</label>
+        <textarea id="title">You find yourself facing a fearsome Ogre. It smells terrible.</textarea>
 
-    <label>Left Choice</label>
-    <input id="left" value="ادخل القهوة ولا نتمشى؟" />
+        <label for="left">Left Choice Text:</label>
+        <input type="text" id="left" value="Attempt to sneak past the Ogre.">
 
-    <label>Right Choice</label>
-    <input id="right" value="نتمشى اول بعدين قهوة؟" />
+        <label for="right">Right Choice Text:</label>
+        <input type="text" id="right" value="Charge the Ogre directly, weapon drawn.">
+        
+        <button onclick="generateJson()">Generate JSON</button>
+        
+        <h2>JSON Data Block:</h2>
+        <pre id="jsonOutput">Click 'Generate JSON' to see the data.</pre>
+    </div>
 
-    <p class="hint">Click below to regenerate the JSON block:</p>
-    <button onclick="saveJSON()">Update Live Data</button>
-  </div>
+    <script>
+        function generateJson() {
+            const title = document.getElementById('title').value;
+            const left = document.getElementById('left').value;
+            const right = document.getElementById('right').value;
+            const now = new Date().toISOString(); // Unique timestamp is the key!
 
-  <script>
-    function saveJSON() {
-      const data = {
-        title: document.getElementById('title').value.trim(),
-        left: document.getElementById('left').value.trim(),
-        right: document.getElementById('right').value.trim(),
-        updatedAt: new Date().toISOString()
-      };
-      
-      const block = document.getElementById('LIVE_CHOICES_JSON');
-      block.textContent = JSON.stringify(data, null, 2);
-      
-      alert('✅ Updated successfully! Now "Commit changes" on GitHub.');
-    }
-  </script>
+            const data = {
+                "title": title,
+                "left": left,
+                "right": right,
+                "updatedAt": now
+            };
 
-  <!-- LIVE_CHOICES_START -->
-  <pre id="LIVE_CHOICES_JSON">{
-  "title": "المول – القرار الأول",
-  "left": "ادخل القهوة ولا نتمشى؟",
-  "right": "نتمشى اول بعدين قهوة؟",
-  "updatedAt": "2025-11-08T00:00:00.000Z"
-}</pre>
-  <!-- LIVE_CHOICES_END -->
+            const jsonString = JSON.stringify(data, null, 4);
+            document.getElementById('jsonOutput').textContent = jsonString;
+        }
+    </script>
 </body>
 </html>
